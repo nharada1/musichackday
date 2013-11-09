@@ -1,0 +1,86 @@
+<html>
+  <head>
+    <script src="jquery/jq.js"></script>
+    <script src="hc/js/highcharts.js"></script>
+    <script src="audio_summary.js"></script>
+
+
+  </head>
+  <body>
+    <div id="container" style="min-width: 310px; height: 400px; margin:0 auto"></div>
+    <input type="text" id="song" placeholder="Song Title">
+    <input type="text" id="artist" placeholder="Artist">
+    <button id="search">Search!</button>
+    
+
+  <script>
+  $(document).ready(function($) {
+    $('#container').highcharts({
+            chart: {
+                zoomType: 'x',
+                spacingRight: 20
+            },
+            title: {
+                text: 'Pi-Hi-Charts'
+            },
+
+            xAxis: {
+                title: {
+                    text: null
+                }
+            },
+            yAxis: {
+                title: {
+                    text: 'DB'
+                }
+            },
+            tooltip: {
+                shared: true
+            },
+            legend: {
+                enabled: false
+            },
+            plotOptions: {
+                area: {
+                    fillColor: {
+                        linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1},
+                        stops: [
+                            [0, Highcharts.getOptions().colors[0]],
+                            [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+                        ]
+                    },
+                    lineWidth: 1,
+                    marker: {
+                        enabled: false
+                    },
+                    shadow: false,
+                    states: {
+                        hover: {
+                            lineWidth: 1
+                        }
+                    },
+                    threshold: null
+                }
+            },
+    
+            series: [{
+                type: 'area',
+                data: []
+              },
+              {
+                type: 'line',
+                data: []
+              }]
+
+    });
+    $('#search').on('click', function(event) {
+      event.preventDefault();
+      /* Act on the event */
+      var song = $('#song').val();
+      var artist = $('#artist').val();
+      getAudioAnalysis(song, artist);
+    });
+  });
+  </script>
+  </body>
+</html>

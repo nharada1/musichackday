@@ -1,0 +1,6 @@
+[submodule "musichackday"]
+	path = musichackday
+	url = https://github.com/nharada1/musichackday
+[submodule "spotifylightshow"]
+	path = spotifylightshow
+	url = https://github.com/nharada1/spotifylightshow

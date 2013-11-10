@@ -14,6 +14,10 @@ function getAudioAnalysis(title, artist){
        // optional stuff to do after success 
        // console.log(song);
       // json_data = data;
+      var track = data.response.songs[0];
+      $('#song_title').text(track.title);
+      $('#artist_name').text(track.artist_name);
+      $('#length').text(track.audio_summary.duration);
       var analysis = data.response.songs[0].audio_summary;
       var danceability = analysis.danceability;
       var energy = analysis.energy;
@@ -23,16 +27,70 @@ function getAudioAnalysis(title, artist){
       $.getJSON(analysis_url, function(song_data){
           json_data = song_data;
           addSection(song_data);
-          addSegment(song_data, 0, 0);
-          addSegment(song_data, 1, 1);
-          addSegment(song_data, 2, 2);
+          var meanLoudness = addSegment(song_data, 0, 0);
+          var brightness = addSegment(song_data, 1, 1);
+          var dirOffset = 5;
+          var loudnessDir = graphDerivative(meanLoudness, 0 + dirOffset);
+          var brightnessDir = graphDerivative(brightness, 1 + dirOffset);
 
+          var minBrightnessDir = sortMin(brightnessDir);
+          console.log('brightness dir min works? ' + minBrightnessDir[0]);
+          var maxBright = sortMax(brightness);
+          console.log('brightness max works? ' + maxBright[0]);
+
+                    var loudWithBright = segmentsInRange(meanLoudness,
+                            (maxBright[0][0] - 5), (maxBright[0][0] + 5));
+                    var dirLoudWithBright = segmentsInRange(loudnessDir,
+                            (maxBright[0][0] - 5), (maxBright[0][0] + 5));
+
+
+          var loudnessMax = sortMax(meanLoudness);
+          console.log('loudness max: ' + loudnessMax[0]);
+          console.log('loudness dir max: ' + sortMax(loudnessDir)[0]);
+          // addSegment(song_data, 2, 2);
+          // addSegment(song_data, 3, 3);
+          // addSegment(song_data, 4, 4);
+
+
+          console.log('max loud next to bright ' + sortMax(loudWithBright)[0]);
+          console.log('max loud dir next to bright ' + sortMax(dirLoudWithBright)[0]);
           var sectionSegments = segmentsIntoSections(song_data);
           sectionAnalysis(sectionSegments);
           // console.log(hc_segment_format);
           dropFinder(segmentsIntoSections(song_data));
        });
    });
+}
+
+function sortMin(segments){
+  segments.sort(function(a, b){
+            return a[1] - b[1];
+          });
+  return segments;
+}
+
+function sortMax(segments){
+  segments.sort(function(a, b){
+            return b[1] - a[1];
+          });
+  return segments;
+}
+
+function segmentsInRange(segments, lower, upper){
+  var i = 0;
+  // console.log('lower : ' + lower);
+  // console.log('upper : ' + upper);
+  // console.log(segments[0][0]);
+  while(segments[i][0] < lower){
+    i++;
+  }
+  var segsInRange = [];
+  while(segments[i][0] < upper){
+    segsInRange.push(segments[i]);
+    // console.log('in range ' + segments[i][0]);
+    i++;
+  }
+  return segsInRange;
 }
 
 function segmentsIntoSections(song){
@@ -57,7 +115,7 @@ function segmentsIntoSections(song){
     }
     segmentsInSections[k].push(segments[j]);
   }
-  console.log(segmentsInSections);
+  // console.log(segmentsInSections);
   return segmentsInSections;
 }
 
@@ -75,7 +133,7 @@ function calcMeanLoudness(segments){
   {
     mean += segments[i].timbre[0];
   }
-  console.log(mean / segments.length);
+  // console.log(mean / segments.length);
   return mean / segments.length;
 }
 
@@ -111,13 +169,42 @@ function dropFinder(sectionSegments){
 function addSegment(song_data, series, timbre){
   var chart = $('#container').highcharts();
   var segments = song_data.segments;
+  var movingAverage = 10;
+
   var data = [];
-  for(var i = 0; i < segments.length; i++){
-    var time = (segments[i].start + segments[i].loudness_max_time);
-    var seg = [ time, segments[i].timbre[timbre] ];
+  for(var i = movingAverage; i < segments.length; i++){
+    var average = 0;
+    for(j = 0; j < movingAverage; j++)
+    {
+      average += segments[i - j].timbre[timbre];
+    }
+    var time = (segments[i - (movingAverage / 2)].start + segments[i - (movingAverage / 2)].loudness_max_time);
+    var meanTimbre = average / movingAverage;
+    var seg = [ time, meanTimbre];
     data.push(seg);
   }
   chart.series[series].setData(data);
+  return data;
+}
+
+function graphDerivative(segAttributes, series){
+  var chart = $('#container').highcharts();
+  var movingAverage = 10;
+  var data = [];
+
+  for(var i =movingAverage; i < segAttributes.length - 1; i++){
+    var average = 0;
+    for(var j = 0; j < movingAverage; j++)
+    {
+      average += (segAttributes[i-j+1][1] - segAttributes[i-j][1]);
+    }
+    var meanD = average / movingAverage;
+    // var diff = segAttributes[i+1][1] - segAttributes[i][1];
+    var seg = [segAttributes[i - (movingAverage / 2)][0], meanD];
+    data.push(seg);
+  }
+  chart.series[series].setData(data);
+  return data;
 }
 
 function addSection(song_data){

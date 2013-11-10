@@ -8,20 +8,25 @@
   </head>
   <body>
     <div id="container" style="min-width: 310px; height: 400px; margin:0 auto"></div>
+
     <input type="text" id="song" placeholder="Song Title">
     <input type="text" id="artist" placeholder="Artist">
     <button id="search">Search!</button>
+        <p id="song_title"></p>
+    <p id="artist_name"></p>
+    <p id="length"></p>
     
 
   <script>
   $(document).ready(function($) {
     $('#container').highcharts({
             chart: {
+                type: 'spline',
                 zoomType: 'x',
                 spacingRight: 20
             },
             title: {
-                text: 'Pi-Hi-Charts'
+                text: 'Find the Drop'
             },
 
             xAxis: {
@@ -68,6 +73,38 @@
                 data: []
               },
               {
+                type: 'line',
+                data: []
+              },
+              {
+                type: 'line',
+                data: []
+              },
+              {
+                type: 'line',
+                data: []
+              },
+              {
+                type: 'line',
+                data: []
+              },
+              {
+                type: 'line',
+                data: []
+              },
+                            {
+                type: 'line',
+                data: []
+              },
+                            {
+                type: 'line',
+                data: []
+              },
+                                          {
+                type: 'line',
+                data: []
+              },
+                                          {
                 type: 'line',
                 data: []
               },
